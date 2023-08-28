@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 
 from .utils import get_uuid, get_unique_filename
 
+
 def get_delete_user():
     return User.objects.get_or_create(username="anonymous", defaults={
         "password": "anonymous"
@@ -209,7 +210,7 @@ class FileShare(BaseModel):
     def __str__(self) -> str:
         return self.user_file.file_name
     
-class ChareRecord(BaseModel):
+class ShareRecord(BaseModel):
     create_by = None
 
     file_share = models.ForeignKey(FileShare, on_delete=models.SET(get_delete_file_share),
