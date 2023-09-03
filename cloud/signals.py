@@ -21,22 +21,22 @@ def post_save_user(sender, instance, created, **kwargs):
         Path.mkdir(settings.MEDIA_ROOT / root_path)
 
 
-@recieve(pre_save, sender=FileAgent, dispatch_uid="pre_save_file_uid")
+@receiver(pre_save, sender=FileAgent, dispatch_uid="pre_save_file_uid")
 def pre_save_file_uid(sender, instance, **kwargs):
     if instance.file_cate == "": instance.file_cate = "0"
 
 
-@recieve(pre_save, sender=UserDir, dispatch_uid="pre_save_folder_uid")
+@receiver(pre_save, sender=UserDir, dispatch_uid="pre_save_folder_uid")
 def pre_save_folder_uid(sender, instance, **kwargs):
     if instance.file_cate == "": instance.file_cate = "1"
 
 
-@recieve(pre_save, sender=UserMessage, dispatch_uid="pre_save_message_uid")
+@receiver(pre_save, sender=UserMessage, dispatch_uid="pre_save_message_uid")
 def pre_save_message_uid(sender, instance, **kwargs):
     if instance.action == "": instance.action = "0"
 
 
-@recieve(pre_save, sender=UserApproval, dispatch_uid="pre_save_approval_uid")
+@receiver(pre_save, sender=UserApproval, dispatch_uid="pre_save_approval_uid")
 def pre_save_approval_uid(sender, instance, **kwargs):
     if instance.action == "": instance.action = "1"
 
