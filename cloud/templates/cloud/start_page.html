@@ -1,0 +1,320 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.bootcdn.net/ajax/libs/mdb-ui-kit/3.9.0/mdb.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'cloud/css/common.css' %}" rel="stylesheet">
+    <title>My Cloud - main page</title>
+    <style>
+        #introCarousel,
+        .carousel-inner,
+        .carousel-item,
+        .carousel-item.active {
+            height: 100vh;
+        }
+
+        .carousel-item:nth-child(1) {
+            background-image: url('{% static "cloud/image/mountain.jpg" %}');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center center;
+        }
+
+        .carousel-item:nth-child(2) {
+            background-image: url('{% static "cloud/image/lake.jpg" %}');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center center;
+        }
+
+        #closeIcon {
+            pointer-events: auto;
+            cursor: pointer;
+            color: white;
+            transition: color 0.15s ease-in-out;
+        }
+
+        #closeIcon:hover {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        @media (min-width: 360px) {
+            #introCarousel {
+                margin-top: -58.59px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav class="navbar navbar-dark" style="z-index: 20;"
+        <div class="container-fluid align-items-center">
+            <a class="navbar-brand nav-link" href="/">
+                <strong>Cloud</strong>
+            </a>
+            <div class="navbar-nav flex-row align-items-center ms-auto">
+                {% if user.is_authenticated %}
+                    <a class="nav-link px-2" href="{% url 'cloud:history' %}" data-mdb-toggle="tooltip"
+                       data-mdb-placement="bottom" title="Download history">
+                        <i class="fas fa-history"></i>
+                    </a>
+                    <a class="nav-link px-2" href="{% url 'cloud:cloud' %}" data-mdb-toggle="tooltip"
+                       data-mdb-placement="bottom" title="My cloud disk">
+                        <i class="fas fa-cloud"></i>
+                    </a>
+                    <a class="nav-link px-2 dropdown-toggle d-flex align-items-center hidden-arrow" href=""
+                       id="navbarDropdownProfile"
+                       role="button" data-mdb-toggle="dropdown">
+                        <img class="rounded-circle" src="{{ user.profile.avatar.url }}" height="25" width="25"
+                             alt="avatar">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'cloud:profile' %}">Personal information</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'cloud:logout' %}">LogOut</a>
+                        </li>
+                    </ul>
+                {% else %}
+                    <a class="nav-link px-2" id="loginLink" href="javascript:void (0)">LogIn</a>
+                    <a class="nav-link px-2" id="registerLink" href="javascript:void (0)">SignUp</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <div id="introCarousel" class="carousel slide carousel-fade shadow-2-strong" data-mdb-ride="carousel"
+         data-mdb-interval="false">
+        <ol class="carousel-indicators">
+            <li data-mdb-target="#introCarousel" data-mdb-slide-to="0" class="active"></li>
+            <li data-mdb-target="#introCarousel" data-mdb-slide-to="1"></li>
+        </ol>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="mask" style="background-color: rgba(0, 0, 0, 0.6);">
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                        <div id="cloudBlock">{# file upload #}
+                            <h1 class="text-white mb-5 text-center">Welcome to MySPACECLOUD</h1>
+                            <div id="shareCard" class="card" style="display: none; width: 18rem">
+                                <div class="card-header">
+                                    <i class="icon-link fas fa-times"></i>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <h5 class="card-title file-title"></h5>
+                                        <small id="expire"></small>
+                                        <div id="summary" class="small text-muted" style="height: 6rem"></div>
+                                    </div>
+                                    <div class="d-flex border rounded p-2 mb-2">
+                                        <div class="me-2">
+                                            <svg class="icon" aria-hidden="true">
+                                                <use xlink:href="#icon-file_default"></use>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-grow-1 text-muted text-truncate"
+                                             style="font-size: 0.5rem; line-height: 1rem">
+                                            <div class="file-title"></div>
+                                            <div id="fileSize"></div>
+                                        </div>
+                                    </div>
+                                    <a class="btn btn-info">Upload</a>
+                                </div>
+                            </div>
+                            <div id="btnToggle" class="text-white text-center">
+                                <button class="m-2 btn btn-outline-light btn-lg" id="receiveBtn">file upload</button>
+                            </div>
+                            <div id="inputToggle" style="display: none;">
+                                <div class="form-outline form-white">
+                                    <i id="closeIcon" class="fs-5 fas fa-times trailing"></i>
+                                    <input type="text" id="shareKey"
+                                           class="form-control form-control-lg form-icon-trailing"
+                                           maxlength="6" autocomplete="off"/>
+                                    <label class="form-label" for="shareKey">enter a six-digit password</label>
+                                </div>
+                            </div>
+                        </div>
+                        {# FILE UPLOAD #}
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <div class="mask" style="background-color: rgba(0, 0, 0, 0.6);">
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                        <div class="text-white text-center">
+                            <h2>WORK HARD AND BE BRAVE.</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <a class="carousel-control-prev" href="#introCarousel" role="button" data-mdb-slide="prev">
+            <scloud class="carousel-control-prev-icon"></scloud>
+        </a>
+        <a class="carousel-control-next" href="#introCarousel" role="button" data-mdb-slide="next">
+            <scloud class="carousel-control-next-icon"></scloud>
+        </a>
+    </div>
+</header>
+{% if not user.is_authenticated %}
+    <main class="mt-5">
+        <div class="container">
+            <section class="mb-5" id="loginBlock">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="bg-image hover-overlay ripple shadow-2-strong rounded-5"
+                             data-mdb-ripple-color="light">
+                            <img src="{% static 'cloud/image/coffee.jpg' %}" class="img-fluid" alt=""/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h4 class="mb-5 text-center"><strong>LogIn</strong></h4>
+                        <div class="row d-flex justify-content-center">
+                            <div class="col-md-6">
+                                <form class="row gy-4 needs-validation" id="loginForm" novalidate>
+                                    <div class="col-12">
+                                        <div class="form-outline">
+                                            <input type="text" id="username" name="username" class="form-control"
+                                                   maxlength="150" pattern="^[\w.@+-_]+$" required/>
+                                            <label class="form-label" for="username">user name</label>
+                                            <div class="invalid-feedback">
+                                                length less then 150, Special symbols'@'、'.'、'-'、'_'、'+'
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-outline">
+                                            <input type="password" id="password" name="password" class="form-control"
+                                                   minlength="6" maxlength="128" required/>
+                                            <label class="form-label" for="password">password</label>
+                                            <div class="invalid-feedback">
+                                                length more then 6 less then 128
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 d-flex justify-content-between">
+                                        <div class="form-check">
+                                            <input class="form-check-input me-2" id="remember" name="remember"
+                                                   type="checkbox" checked/>
+                                            <label class="form-check-label" for="remember">remember</label>
+                                        </div>
+                                        <div>
+                                            <a href="javascript:void(0)" data-mdb-toggle="modal"
+                                               data-mdb-target="#resetModal">Forgot your password？</a>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="button" class="btn btn-primary btn-block" id="loginBtn">
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <hr class="my-5">
+            <section class="mb-5" id="registerBlock">
+                <div class="row">
+                    <div class="col-md-6 order-md-1 order-2">
+                        <h4 class="mb-5 text-center"><strong>SignUp</strong></h4>
+                        <div class="row d-flex justify-content-center">
+                            <div class="col-md-6">
+                                <form class="row gy-4 needs-validation" id="registerForm" novalidate>
+                                    <div class="col-12">
+                                        <div class="form-outline">
+                                            <input type="text" id="registerUsername" name="username"
+                                                   class="form-control"
+                                                   maxlength="150" pattern="^[\w.@+-_]+$" required/>
+                                            <label class="form-label" for="registerUsername">user name</label>
+                                            <div class="invalid-feedback">
+                                                length less then 150, Special symbols'@'、'.'、'-'、'_'、'+'
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-outline">
+                                            <input type="password" id="registerPassword" name="password"
+                                                   class="form-control" minlength="6" maxlength="128" required/>
+                                            <label class="form-label" for="registerPassword">password</label>
+                                            <div class="invalid-feedback">
+                                                length more then 6 less then 128
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-outline">
+                                            <input type="password" id="confirmPassword" name="confirmPassword"
+                                                   class="form-control" minlength="6" maxlength="128" required/>
+                                            <label class="form-label" for="confirmPassword">Confirm the password</label>
+                                            <div class="invalid-feedback">
+                                                length more then 6 less then 128
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="button" class="btn btn-primary btn-block" id="registerBtn">SignUp
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4 order-md-2 order-1">
+                        <div class="bg-image hover-overlay ripple shadow-2-strong rounded-5"
+                             data-mdb-ripple-color="light">
+                            <img src="{% static 'cloud/image/nature.jpg' %}" class="img-fluid" alt=""/>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <div class="modal fade" id="resetModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reset password</h5>
+                    <button type="button" class="btn-close" data-mdb-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Enter your username and I'll send a confirmation message to your email</p>
+                    <p class="text-muted small">Note: If you can't recieve a message to your email, please check if the pop3/smtp service is enabled in your mailbox settings.</p>
+                    <form id="resetForm" novalidate>
+                        <div class="form-outline">
+                            <input class="form-control" id="resetName" name="resetName" required>
+                            <label class="form-label" for="resetName">user name</label>
+                            <div class="invalid-feedback">Please enter verification information</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">canceled</button>
+                    <button type="button" class="btn btn-primary" id="resetBtn">confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+<!-- notification about verification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+    <div id="toast" class="toast fade hide">
+        <div class="toast-header">
+            <i class="fas fa-check-circle fa-lg text-success"></i>
+            <button type="button" class="ms-auto btn-close" data-mdb-dismiss="toast"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+</div>
+<!-- notification about verification -->
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/mdb-ui-kit/3.9.0/mdb.min.js"></script>
+<script src="//at.alicdn.com/t/font_2926309_gvlwiirwihf.js"></script>
+<script src="{% static 'cloud/js/utils.js' %}"></script>
+<script src="{% static 'cloud/js/config.js' %}"></script>
+<script src="{% static 'cloud/js/index.js' %}"></script>
+</body>
+</html>

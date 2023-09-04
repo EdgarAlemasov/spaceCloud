@@ -350,12 +350,12 @@ class FolderUploadView(LoginRequiredMixin, View):
 
             file = files[i]
             file_path = temp_path / file.name
-            with open(settings.MEDIA_ROOT / file_path, 'wb') as f:
+            with open(settings.MEDIA_ROOT / file_path, "wb") as f:
                 for chunk in file.chunks():
                     f.write(chunk)
             file_type = FileType.objects.get_or_create(suffix=Path(file.name).suffix,
-                                                       defaults={'type_name': 'неизвестный'})[0]
-            objs.append(UserFile(file_name=file.name, file_cate='0', file_type=file_type, file_size=file.size,
+                                                       defaults={"type_name": "неизвестный"})[0]
+            objs.append(UserFile(file_name=file.name, file_cate="0", file_type=file_type, file_size=file.size,
                                  file_path=file_path, folder=temp_folder, create_by=request.user))
 
         for d in dirs:
@@ -370,14 +370,300 @@ class FolderUploadView(LoginRequiredMixin, View):
             folder_path = folder.file_path if folder is not None else None
 
         FileAgent.objects.bulk_create(objs)
-        UserDir.objects.bulk_update(dirs, ('file_size', 'update_by'))
+        UserDir.objects.bulk_update(dirs, ("file_size", "update_by"))
 
-        request.session['cloud']['used'] = use
-        return AjaxObj(200, 'Folder has been added successfully').get_response()
+        request.session["cloud"]["used"] = use
+        return AjaxObj(200, "Folder has been added successfully").get_response()
     
 
-    class ShareCreateView(LoginRequiredMixin, View):
-        pass
+class ShareCreateView(LoginRequiredMixin, View):
 
-        
+    def post(self, request):
+        uuid = request.POST.get("uuid")
+        while True:
+            key, signature = get_key_signature()
+            if not FileShare.objects.filter(secret_key=key).exists():
+                break
 
+        share = FileShare.objects.create(secret_key=key, signature=signature,
+                                         user_file=UserFile.objects.get(file_uuid=uuid),
+                                         expire_time=timezone.now() + timedelta(days=7))
+        return AjaxObj(200, data={"key": key, "signature": signature, "id": share.id}).get_response()
+
+
+class ShareUpdateView(LoginRequiredMixin, View):
+
+    def post(self, request):
+        data = json_loads(request.body)
+        share = FileShare.objects.get(id=data.get("id"))
+        delta = data.get("delta")
+        summary = data.get("summary")
+        if delta is None and summary is not None:
+            share.summary = summary
+        elif delta is not None and summary is None:
+            share.expire_time = timezone.now() + timedelta(days=delta)
+        else:
+            share.summary = summary
+            share.expire_time = timezone.now() + timedelta(days=delta if delta is not None else 0)
+        share.update_by = request.user
+        share.save()
+        return AjaxObj(200, "Link has been set successfully").get_response()
+
+
+class ShareGetView(View):
+
+    def post(self, request):
+        key = request.POST.get("key")
+        try:
+            share = FileShare.objects.select_related("user_file").get(secret_key=key)
+        except FileShare.DoesNotExist:
+            return AjaxObj(400, "Password expired").get_response()
+
+        if timezone.now() > share.expire_time:
+            return AjaxObj(400, "Password expired").get_response()
+        file = share.user_file
+        if request.user.is_authenticated:
+            ShareRecord.objects.create(file_share=share, recipient=request.user)
+        else:
+            ShareRecord.objects.create(file_share=share, anonymous=request.META.get("REMOTE_ADDR"))
+        return AjaxObj(200, data={
+            "file": {"name": file.file_name, "size": file.file_size, "uuid": file.file_uuid},
+            "share": {"expire": share.expire_time, "summary": share.summary}
+        }).get_response()
+
+
+class ShareDelete(LoginRequiredMixin, View):
+
+    def post(self, request):
+        ids = json_loads(request.body).get("ids")
+        for i in ids:
+            try:
+                FileShare.objects.select_related("user_file").filter(
+                    user_file__create_by=request.user).get(id=i).delete()
+            except FileShare.DoesNotExist:
+                return AjaxObj(400, "The record contains files that do not exist or have been deleted").get_response()
+        return AjaxObj(200, "record successfully deleted").get_response()
+
+
+class FileMoveView(LoginRequiredMixin, View):
+
+    def post(self, request):
+        data = json_loads(request.body)
+        if data.get("src") == data.get("dst"):
+            return AjaxObj(400, "Empty folder").get_response()
+
+        src = request.user.files.get(file_uuid=data.get("src"))
+        dst = request.user.files.get(file_uuid=data.get("dst", request.session["root"]))
+
+        if request.user.files.filter(folder=dst, file_cate=src.file_cate, file_name=src.file_name).exists():
+            return AjaxObj(400, "The folder has file with this name").get_response()
+
+        dirs = list()
+        src_folder = src.folder
+
+        file_move(str(settings.MEDIA_ROOT / src.file_path), str(settings.MEDIA_ROOT / dst.file_path))
+        src.folder = dst
+        src.file_path = Path(dst.file_path) / src.file_name
+        src.update_by = request.user
+        src.save()
+
+        # Обновите папку назначения и исходную папку, а также размер ее родительской папки
+        # (за исключением корневого каталога)
+        while dst.folder is not None:
+            dst.file_size = dst.file_size + src.file_size
+            dst.update_by = request.user
+            dirs.append(dst)
+            dst = dst.folder
+        while src_folder.folder is not None:
+            src_folder.file_size = src_folder.file_size - src.file_size
+            src_folder.update_by = request.user
+            dirs.append(src_folder)
+            src_folder = src_folder.folder
+
+        if not dirs:
+            UserDir.objects.bulk_update(dirs, ("file_size", "update_by"))
+
+        return AjaxObj(200, "Успешное перемещение папки").get_response()
+
+
+class FileDeleteView(LoginRequiredMixin, View):
+
+    def post(self, request):
+        uuids = json_loads(request.body).get("uuids")
+        use = request.session["cloud"]["used"]
+        code = msg = folder = None
+        discard = 0
+        dirs = list()
+        for uuid in uuids:
+            try:
+                file = request.user.files.get(file_uuid=uuid)
+                discard += file.file_size
+                if not folder:
+                    folder = file.folder
+            except UserFile.DoesNotExist:
+                break
+            real_path = settings.MEDIA_ROOT / file.file_path
+            if file.file_cate == "0":
+                real_path.unlink()
+            else:
+                rmtree(real_path)
+            file.delete()
+        else:
+            code, msg = 200, "Delete has been successfully"
+        if not code and not msg:
+            code, msg = 400, "Some files don't exist or has been deleted"
+
+        while folder is not None:
+            folder.file_size = folder.file_size - discard
+            folder.update_by = request.user
+            dirs.append(folder)
+            folder = folder.folder
+        if not dirs:
+            UserDir.objects.bulk_update(dirs, ("file_size", "update_by"))
+
+        use -= discard
+        request.session["cloud"]["used"] = use
+
+        return AjaxObj(code, msg).get_response()
+
+
+class FileTrashView(LoginRequiredMixin, View):
+
+    def post(self, request):
+        json_data = json_loads(request.body)
+        method = json_data.get("method")
+        uuids = json_data.get("uuids")
+        objs = list()
+        if method == "trash":
+            del_flag = "1"
+            msg = "Delete has been successfully"
+        else:
+            del_flag = "0"
+            msg = "Recovery has been successfully"
+        for uuid in uuids:
+            try:
+                file = request.user.files.get(file_uuid=uuid)
+            except UserFile.DoesNotExist:
+                return AjaxObj(400, "Some files don't exist or has been deleted").get_response()
+            file.del_flag = del_flag
+            file.update_by = request.user
+            objs.append(file)
+
+        UserFile.objects.bulk_update(objs, ("del_flag",))
+        return AjaxObj(200, msg).get_response()
+
+
+class CloudViewSet(ModelViewSet):
+
+    serializer_class = FileSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = None
+
+    def get_queryset(self):
+        folder_uuid = self.request.query_params.get("folderUUID", self.request.session["root"])
+        sort = self.request.query_params.get("sort")
+        order = self.request.query_params.get("order")
+        search = self.request.query_params.get("search")
+
+        if search:
+            queryset = self.request.user.files.filter(file_name__icontains=search, file_cate="0", del_flag="0")
+        else:
+            queryset = self.request.user.files.select_related("folder").filter(folder__file_uuid=folder_uuid,
+                                                                               del_flag="0")
+        if sort:
+            queryset = queryset.order_by(sort)
+            if order == "desc":
+                queryset = queryset.order_by("-" + sort)
+        return queryset
+
+
+class HistoryViewSet(ModelViewSet):
+
+    serializer_class = FileShareSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        sort = self.request.query_params.get("sort")
+        order = self.request.query_params.get("order")
+        search = self.request.query_params.get("search")
+        queryset = FileShare.objects.select_related("user_file").filter(user_file__create_by=self.request.user)
+
+        if search:
+            queryset = queryset.filter(user_file__file_name__icontains=search)
+        if sort:
+            queryset = queryset.order_by(sort)
+            if order == "desc":
+                queryset = queryset.order_by("-" + sort)
+        return queryset
+
+
+class BinViewSet(ModelViewSet):
+
+    serializer_class = FileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        sort = self.request.query_params.get("sort")
+        order = self.request.query_params.get("order")
+        search = self.request.query_params.get("search")
+        queryset = self.request.user.files.filter(del_flag="1")
+
+        if search:
+            queryset = queryset.filter(file_name__icontains=search)
+        if sort:
+            queryset = queryset.order_by(sort)
+            if order == "desc":
+                queryset = queryset.order_by("-" + sort)
+        return queryset
+
+
+class FolderViewSet(ModelViewSet):
+
+    serializer_class = FolderSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = None
+
+    def get_queryset(self):
+        exclude = self.request.query_params.get("exclude")
+        folder_uuid = self.request.query_params.get("folderUUID", self.request.session["root"])
+        return self.request.user.files.select_related("folder").filter(folder__file_uuid=folder_uuid,
+                                                                       file_cate="1",
+                                                                       del_flag="0").exclude(file_uuid=exclude)
+
+
+class FileViewSet(ModelViewSet):
+
+    serializer_class = FileSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = None
+
+    def get_queryset(self):
+        try:
+            uuid = UUID(hex=self.request.query_params.get("uuid"))
+        except ValueError:
+            return UserFile.objects.none()
+        return self.request.user.files.filter(file_uuid=uuid, file_cate="0")
+
+
+class NoticeViewSet(ModelViewSet):
+
+    serializer_class = NoticeSerializer
+    queryset = Notice.objects.all()
+    permission_classes = [IsAuthenticated]
+    pagination_class = NoticeResultSetPagination
+
+
+def bad_request_view(request, exception, template_name="errors/400.html"):
+    return render(request, template_name, status=400)
+
+
+def permission_denied_view(request, exception, template_name="errors/403.html"):
+    return render(request, template_name, status=403)
+
+
+def not_found_view(request, exception, template_name="errors/404.html"):
+    return render(request, template_name, status=404)
+
+
+def server_error_view(request, template_name="errors/500.html"):
+    return render(request, template_name, status=500)
