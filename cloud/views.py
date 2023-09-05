@@ -138,7 +138,7 @@ class RegisterView(View):
         return AjaxObj(400, "ERROR", {"errors": form.errors}).get_responce()
     
 class LoginOutView(RedirectView):
-    pattern_name = "cloud/index.html"
+    pattern_name = "cloud:start_page"
 
     def get(self, request, *args, **kwargs):
         logout(request)
