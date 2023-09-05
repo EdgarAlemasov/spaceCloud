@@ -24,7 +24,7 @@ from django.contrib.staticfiles.views import serve
 from cloud.urls import router
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('', include('cloud.urls')),
     path('api/', include(router.urls)),
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),

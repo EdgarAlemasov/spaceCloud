@@ -10,7 +10,7 @@ from .models import (Profile, Role, NameLimit, RoleLimit, FileType,
 
 @admin.action(description="Restore selected file")
 def make_recycle(model_admin, request, queryset):
-    rows = queryset.update(del_flag="0", update_by=request.user)
+    rows = queryset.update(delete_flag="0", update_by=request.user)
     model_admin.message_user(request, ngettext(
         f"{rows} file restored",
         f"{rows} file resotred",
@@ -19,7 +19,7 @@ def make_recycle(model_admin, request, queryset):
 
 @admin.action(description="Restore selected file")
 def make_removed(model_admin, request, queryset):
-    rows = queryset.update(del_flag="1", update_by=request.user)
+    rows = queryset.update(delete_flag="1", update_by=request.user)
     model_admin.message_user(request, ngettext(
         f"{rows} file restored",
         f"{rows} file restored",
@@ -110,14 +110,14 @@ class RoleAdmin(admin.ModelAdmin):
 class LimitAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Main information", {
-            "fields": ("limit_name", "limit_key")
+            "fields": ("name_limit", "name_key")
         }),
         ("Other information", {
             "fields": ("create_by", "create_time", "update_by", "update_time", "remark")
         })
     )
     readonly_fields = ("create_by", "create_time", "update_by", "update_time")
-    list_display = ("limit_name", "limit_key")
+    list_display = ("name_limit", "name_key")
     list_per_page = 10
 
 
@@ -138,7 +138,7 @@ class RoleLimitAdmin(admin.ModelAdmin):
             "fields": ("create_by", "create_time", "update_by", "update_time", "remark")
         })
     )
-    readonly_fields = ("create_by", "create_time", "update_by", "update_time", "remark")
+    readonly_fields = ("create_by", "create_time", "update_by", "update_time")
     list_select_related = ("role", "limit")
     list_display = ("role", "limit", "value")
     list_filter = ("role", "limit")
@@ -190,7 +190,7 @@ class UserFile(admin.ModelAdmin):
 class FileAgentAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Main information", {
-            "fields": ("file_uuid", "file_name", "file_type", "file_size", "file_path", "folder", "del_flag")
+            "fields": ("file_uuid", "file_name", "file_type", "file_size", "file_path", "folder", "delete_flag")
         }),
         ("Other information", {
             "fields": ("create_by", "create_time", "update_by", "update_time", "remark")
@@ -201,8 +201,8 @@ class FileAgentAdmin(admin.ModelAdmin):
     readonly_fields = ("file_uuid", "create_by", "create_time", "update_by", "update_time")
     actions = [make_removed, make_recycle]
     list_select_related = ("create_by",)
-    list_display = ("file_name", "file_type", "file_size", "del_flag", "create_by")
-    list_filter = ("file_type", "del_flag")
+    list_display = ("file_name", "file_type", "file_size", "delete_flag", "create_by")
+    list_filter = ("file_type", "delete_flag")
     list_per_page = 10
 
 
@@ -222,7 +222,7 @@ class FileAgentAdmin(admin.ModelAdmin):
 class UserDirAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Main information", {
-            "fileds": ("file_uuid", "file_name", "file_size", "file_path", "folder", "del_flag")
+            "fields": ("file_uuid", "file_name", "file_size", "file_path", "folder", "delete_flag")
         }),
         ("Other information", {
             "fields": ("create_by", "create_time", "update_by", "update_time", "remark")
@@ -233,8 +233,8 @@ class UserDirAdmin(admin.ModelAdmin):
     readonly_fields = ("file_uuid", "create_by", "create_time", "update_by", "update_time")
     actions = [make_removed, make_recycle]
     list_select_related = ("create_by",)
-    list_display = ("file_name", "file_size", "del_flag", "create_by")
-    list_filter = ("del_flag",)
+    list_display = ("file_name", "file_size", "delete_flag", "create_by")
+    list_filter = ("delete_flag",)
     list_per_page = 10
 
     def has_add_permission(self, request: HttpRequest) -> bool:
@@ -253,7 +253,7 @@ class UserDirAdmin(admin.ModelAdmin):
 class FileShareAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Main information", {
-            "fileds": ("secret_key", "signature", "expire_time", "user_file", "summary")
+            "fields": ("secret_key", "signature", "expire_time", "user_file", "summary")
         }),
         ("Other information", {
             "fields": ("create_time", "update_by", "update_time", "remark")
@@ -283,7 +283,7 @@ class ShareRecordAdmin(admin.ModelAdmin):
             "fields": ("file_share", "recipient", "anonymous")
         }),
         ("Other information", {
-            "fileds": ("create_time", "update_by", "update_time", "remark")
+            "fields": ("create_time", "update_by", "update_time", "remark")
         })
     )
     search_fields = ("recipient__user_name", "file_share__user_file_name")
@@ -309,7 +309,7 @@ class NoticeAdmin(admin.ModelAdmin):
             "fields": ("title", "content")
         }),
         ("Other information", {
-            "fileds": ("create_by", "create_time", "update_by", "update_time", "remark")
+            "fields": ("create_by", "create_time", "update_by", "update_time", "remark")
         })
     )
     search_fields = ("create_by__user_name", "notice_title")

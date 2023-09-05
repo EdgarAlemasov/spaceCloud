@@ -1,4 +1,5 @@
 {% load static %}
+{% csrf_token %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -51,7 +52,7 @@
 </head>
 <body>
 <header>
-    <nav class="navbar navbar-dark" style="z-index: 20;"
+    <nav class="navbar navbar-dark" style="z-index: 20;">
         <div class="container-fluid align-items-center">
             <a class="navbar-brand nav-link" href="/">
                 <strong>Cloud</strong>
@@ -207,7 +208,7 @@
                                         </div>
                                     </div>
                                     <div class="col-12">
-                                        <button type="button" class="btn btn-primary btn-block" id="loginBtn">
+                                        <button type="button" class="btn btn-primary btn-block" id="loginBtn">enter
                                         </button>
                                     </div>
                                 </form>
@@ -266,7 +267,7 @@
                     <div class="col-md-6 mb-4 order-md-2 order-1">
                         <div class="bg-image hover-overlay ripple shadow-2-strong rounded-5"
                              data-mdb-ripple-color="light">
-                            <img src="{% static 'cloud/image/nature.jpg' %}" class="img-fluid" alt=""/>
+                            <img src="{% static 'cloud/image/owl.jpg' %}" class="img-fluid" alt=""/>
                         </div>
                     </div>
                 </div>
@@ -315,6 +316,6 @@
 <script src="//at.alicdn.com/t/font_2926309_gvlwiirwihf.js"></script>
 <script src="{% static 'cloud/js/utils.js' %}"></script>
 <script src="{% static 'cloud/js/config.js' %}"></script>
-<script src="{% static 'cloud/js/index.js' %}"></script>
+<script src="{% static 'cloud/js/start_page.js' %}"></script>
 </body>
 </html>

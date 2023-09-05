@@ -26,12 +26,12 @@ SECRET_KEY = 'django-insecure-=h^5l_=04on8!%ks894e%5d2xnd-uj%9ro2^e#=c1kbqi(p(q6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '128.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = '25'
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_USER = 'edgaralemasov'
+EMAIL_HOST_PASSWORD = 'python7589'
 EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = 'myspacecloud@localhost'
 
@@ -93,10 +93,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'spacecloud',
-        'HOST': '128.0.0.1',
+        'HOST': '127.0.0.1',
         'PORT': '5432',
         'USER': 'postgres',
-        'PASSWORD': '7700009930q',
+        'PASSWORD': 'ImAlive72ae',
     }
 }
 
@@ -155,7 +155,7 @@ MAX_AVATAR_SIZE = 3145728
 # Cross origin
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8000',
-    'http://128.0.0.1:8000',
+    'http://127.0.0.1:8000',
 ]
 
 # Rest framework
@@ -166,7 +166,7 @@ REST_FRAMEWORK = {
 
 # Debug toolbar
 # INTERNAL_IPS = [
-#     '128.0.0.1'
+#     '127.0.0.1'
 # ]
 
 # reset token
