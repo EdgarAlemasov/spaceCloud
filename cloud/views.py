@@ -17,6 +17,7 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.generic import View, TemplateView, RedirectView
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
@@ -110,6 +111,7 @@ class ResetPasswordDoneView(TemplateView):
         return context
     
 class LoginView(View):
+    @csrf_exempt
     def post(self, request):
         form = UserBaseForm(request.POST)
         if form.is_valid():
@@ -127,6 +129,7 @@ class LoginView(View):
     
 
 class RegisterView(View):
+    @csrf_exempt
     def post(self, request):
         form = UserBaseForm(request.POST)
         if form.is_valid():
@@ -146,7 +149,7 @@ class LoginOutView(RedirectView):
     
 
 class AlterAvatarView(LoginRequiredMixin, View):
-
+    @csrf_exempt
     def post(self, request):
         form = AvatarForm(request.POST, request.FILES)
         if form.is_valid():
@@ -161,7 +164,7 @@ class AlterAvatarView(LoginRequiredMixin, View):
     
 
 class AlterPasswordView(LoginRequiredMixin, View):
-
+    @csrf_exempt
     def post(self, request):
         form = PasswordForm(request.POST)
         if form.is_valid():
@@ -175,6 +178,7 @@ class AlterPasswordView(LoginRequiredMixin, View):
 
 
 class ResetPasswordView(View):
+    @csrf_exempt
     def post(self, request):
         user_name = request.POST.get("resetName").strip()
         queryset = User.objects.filter(user_name=user_name)
@@ -208,7 +212,7 @@ class ResetPasswordView(View):
     
 
 class AlterInfoView(LoginRequiredMixin, View):
-
+    @csrf_exempt
     def post(self, request):
         form = InfoForm(request.POST)
 
@@ -231,7 +235,7 @@ class AlterInfoView(LoginRequiredMixin, View):
     
 
 class MsgApprView(LoginRequiredMixin, View):
-
+    @csrf_exempt
     def post(self, request):
         message = request.POST.get("message").strip()
         if not message:
@@ -278,6 +282,7 @@ class DuplicateCheck(LoginRequiredMixin, View):
     
 
 class FileUploadView(LoginRequiredMixin, View):
+    @csrf_exempt
     def post(self, request):
         file = request.FILES.get("file")
         if not file:
@@ -311,7 +316,7 @@ class FileUploadView(LoginRequiredMixin, View):
         return AjaxObj(200, "File has been upload").get_responce()
     
 class FolderUploadView(LoginRequiredMixin, View):
-
+    @csrf_exempt
     def post(self, request):
         files = request.FILES.getlist("files")
         paths = request.POST.getlist("paths")
@@ -377,7 +382,7 @@ class FolderUploadView(LoginRequiredMixin, View):
     
 
 class ShareCreateView(LoginRequiredMixin, View):
-
+    @csrf_exempt
     def post(self, request):
         uuid = request.POST.get("uuid")
         while True:
@@ -392,7 +397,7 @@ class ShareCreateView(LoginRequiredMixin, View):
 
 
 class ShareUpdateView(LoginRequiredMixin, View):
-
+    @csrf_exempt
     def post(self, request):
         data = json_loads(request.body)
         share = FileShare.objects.get(id=data.get("id"))
@@ -411,7 +416,7 @@ class ShareUpdateView(LoginRequiredMixin, View):
 
 
 class ShareGetView(View):
-
+    @csrf_exempt
     def post(self, request):
         key = request.POST.get("key")
         try:
@@ -433,7 +438,7 @@ class ShareGetView(View):
 
 
 class ShareDelete(LoginRequiredMixin, View):
-
+    @csrf_exempt
     def post(self, request):
         ids = json_loads(request.body).get("ids")
         for i in ids:
@@ -446,7 +451,7 @@ class ShareDelete(LoginRequiredMixin, View):
 
 
 class FileMoveView(LoginRequiredMixin, View):
-
+    @csrf_exempt
     def post(self, request):
         data = json_loads(request.body)
         if data.get("src") == data.get("dst"):
@@ -487,7 +492,7 @@ class FileMoveView(LoginRequiredMixin, View):
 
 
 class FileDeleteView(LoginRequiredMixin, View):
-
+    @csrf_exempt
     def post(self, request):
         uuids = json_loads(request.body).get("uuids")
         use = request.session["cloud"]["used"]
@@ -528,7 +533,7 @@ class FileDeleteView(LoginRequiredMixin, View):
 
 
 class FileTrashView(LoginRequiredMixin, View):
-
+    @csrf_exempt
     def post(self, request):
         json_data = json_loads(request.body)
         method = json_data.get("method")

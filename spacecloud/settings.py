@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cloud.apps.CloudConfig',
     'psycopg2',
-    'corsheaders',
+    # 'corsheaders',
     'rest_framework',
     'debug_toolbar',
 ]
