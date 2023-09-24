@@ -378,7 +378,7 @@ class FolderUploadView(LoginRequiredMixin, View):
         UserDir.objects.bulk_update(dirs, ("file_size", "update_by"))
 
         request.session["cloud"]["used"] = use
-        return AjaxObj(200, "Folder has been added successfully").get_response()
+        return AjaxObj(200, "Folder has been added successfully").get_responce()
     
 
 class ShareCreateView(LoginRequiredMixin, View):
@@ -393,7 +393,7 @@ class ShareCreateView(LoginRequiredMixin, View):
         share = FileShare.objects.create(secret_key=key, signature=signature,
                                          user_file=UserFile.objects.get(file_uuid=uuid),
                                          expire_time=timezone.now() + timedelta(days=7))
-        return AjaxObj(200, data={"key": key, "signature": signature, "id": share.id}).get_response()
+        return AjaxObj(200, data={"key": key, "signature": signature, "id": share.id}).get_responce()
 
 
 class ShareUpdateView(LoginRequiredMixin, View):
@@ -412,7 +412,7 @@ class ShareUpdateView(LoginRequiredMixin, View):
             share.expire_time = timezone.now() + timedelta(days=delta if delta is not None else 0)
         share.update_by = request.user
         share.save()
-        return AjaxObj(200, "Link has been set successfully").get_response()
+        return AjaxObj(200, "Link has been set successfully").get_responce()
 
 
 class ShareGetView(View):
@@ -422,10 +422,10 @@ class ShareGetView(View):
         try:
             share = FileShare.objects.select_related("user_file").get(secret_key=key)
         except FileShare.DoesNotExist:
-            return AjaxObj(400, "Password expired").get_response()
+            return AjaxObj(400, "Password expired").get_responce()
 
         if timezone.now() > share.expire_time:
-            return AjaxObj(400, "Password expired").get_response()
+            return AjaxObj(400, "Password expired").get_responce()
         file = share.user_file
         if request.user.is_authenticated:
             ShareRecord.objects.create(file_share=share, recipient=request.user)
@@ -434,7 +434,7 @@ class ShareGetView(View):
         return AjaxObj(200, data={
             "file": {"name": file.file_name, "size": file.file_size, "uuid": file.file_uuid},
             "share": {"expire": share.expire_time, "summary": share.summary}
-        }).get_response()
+        }).get_responce()
 
 
 class ShareDelete(LoginRequiredMixin, View):
@@ -446,8 +446,8 @@ class ShareDelete(LoginRequiredMixin, View):
                 FileShare.objects.select_related("user_file").filter(
                     user_file__create_by=request.user).get(id=i).delete()
             except FileShare.DoesNotExist:
-                return AjaxObj(400, "The record contains files that do not exist or have been deleted").get_response()
-        return AjaxObj(200, "record successfully deleted").get_response()
+                return AjaxObj(400, "The record contains files that do not exist or have been deleted").get_responce()
+        return AjaxObj(200, "record successfully deleted").get_responce()
 
 
 class FileMoveView(LoginRequiredMixin, View):
@@ -455,13 +455,13 @@ class FileMoveView(LoginRequiredMixin, View):
     def post(self, request):
         data = json_loads(request.body)
         if data.get("src") == data.get("dst"):
-            return AjaxObj(400, "Empty folder").get_response()
+            return AjaxObj(400, "Empty folder").get_responce()
 
         src = request.user.files.get(file_uuid=data.get("src"))
         dst = request.user.files.get(file_uuid=data.get("dst", request.session["root"]))
 
         if request.user.files.filter(folder=dst, file_cate=src.file_cate, file_name=src.file_name).exists():
-            return AjaxObj(400, "The folder has file with this name").get_response()
+            return AjaxObj(400, "The folder has file with this name").get_responce()
 
         dirs = list()
         src_folder = src.folder
@@ -488,7 +488,7 @@ class FileMoveView(LoginRequiredMixin, View):
         if not dirs:
             UserDir.objects.bulk_update(dirs, ("file_size", "update_by"))
 
-        return AjaxObj(200, "Успешное перемещение папки").get_response()
+        return AjaxObj(200, "Успешное перемещение папки").get_responce()
 
 
 class FileDeleteView(LoginRequiredMixin, View):
@@ -529,7 +529,7 @@ class FileDeleteView(LoginRequiredMixin, View):
         use -= discard
         request.session["cloud"]["used"] = use
 
-        return AjaxObj(code, msg).get_response()
+        return AjaxObj(code, msg).get_responce()
 
 
 class FileTrashView(LoginRequiredMixin, View):
@@ -549,13 +549,13 @@ class FileTrashView(LoginRequiredMixin, View):
             try:
                 file = request.user.files.get(file_uuid=uuid)
             except UserFile.DoesNotExist:
-                return AjaxObj(400, "Some files don't exist or has been deleted").get_response()
+                return AjaxObj(400, "Some files don't exist or has been deleted").get_responce()
             file.del_flag = del_flag
             file.update_by = request.user
             objs.append(file)
 
         UserFile.objects.bulk_update(objs, ("del_flag",))
-        return AjaxObj(200, msg).get_response()
+        return AjaxObj(200, msg).get_responce()
 
 
 class CloudViewSet(ModelViewSet):
