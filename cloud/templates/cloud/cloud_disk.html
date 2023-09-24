@@ -1,6 +1,6 @@
 {% extends 'cloud/start_page.html' %}
 {% load static %}
-
+{% csrf_token %}
 {% block styles %}
     <link href="https://cdn.staticfile.org/bootstrap-table/1.19.1/bootstrap-table.min.css" rel="stylesheet">
 {% endblock %}
@@ -8,13 +8,13 @@
 {% block title %}Облачный диск{% endblock %}
 
 {% block sidenavs %}
-    <a class="nav-link fs-6 active" id="cloudTab" href="{% url 'cloud:cloud' %}">
+    <a class="nav-link fs-6 active" id="cloudTab" href="{% url 'cloud:cloud_disk' %}">
         <i class="fas fa-cloud me-2"></i>МОЙ ОБЛАЧНЫЙ ДИСК
     </a>
     <a class="nav-link fs-6" id="historyTab" href="{% url 'cloud:history' %}">
         <i class="fas fa-history me-2"></i>ИСТОРИЯ ЗАГРУЗОК
     </a>
-    <a class="nav-link fs-6" id="binTab" href="{% url 'cloud:bin' %}">
+    <a class="nav-link fs-6" id="binTab" href="{% url 'cloud:backet' %}">
         <i class="fas fa-trash me-2"></i>КОРЗИНА
     </a>
 {% endblock %}

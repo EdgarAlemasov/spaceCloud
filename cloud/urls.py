@@ -2,24 +2,24 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 
-from  cloud import views
+from cloud import views
 
 app_name = "cloud"
 
 # main pages
 urlpatterns = [
     path("", views.StartPageView.as_view(), name="start_page"),
-    path("profile", views.UserPageView.as_view(), name="profile"),
-    path("cloud", views.CloudDiskView.as_view(), name="cloud"),
+    path("user_page", views.UserPageView.as_view(), name="user_page"),
+    path("cloud_disk", views.CloudDiskView.as_view(), name="cloud_disk"),
     path("history", views.HistoryView.as_view(), name="history"),
     path("backet",  views.BacketView.as_view(), name="backet"),
-    path("detail", views.FileInfoView.as_view(), name="detail"),
+    path("file_info", views.FileInfoView.as_view(), name="file_info"),
 ]
 
 
 # share pages
 urlpatterns += [
-    path("share-get", views.ShareGetView.as_view(), name="share_get"),
+    path("share-get", views.ShareGetView.as_view(), name="share-get"),
     path("share-create", views.ShareCreateView.as_view(), name="share-create"),
     path("share-update", views.ShareUpdateView.as_view(), name="share-update"),
     path("history-delete", views.ShareDelete.as_view(), name="history-delete"),

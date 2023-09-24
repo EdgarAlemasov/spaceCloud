@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-=h^5l_=04on8!%ks894e%5d2xnd-uj%9ro2^e#=c1kbqi(p(q6
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
+CSRF_TRUSTED_ORIGINS = ["http://localhost/", "http://127.0.0.1/"]
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 EMAIL_HOST = 'localhost'
@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cloud.apps.CloudConfig',
     'psycopg2',
-    # 'corsheaders',
+    'corsheaders',
     'rest_framework',
     'debug_toolbar',
 ]

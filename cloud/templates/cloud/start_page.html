@@ -63,19 +63,19 @@
                        data-mdb-placement="bottom" title="Download history">
                         <i class="fas fa-history"></i>
                     </a>
-                    <a class="nav-link px-2" href="{% url 'cloud:cloud' %}" data-mdb-toggle="tooltip"
+                    <a class="nav-link px-2" href="{% url 'cloud:cloud_disk' %}" data-mdb-toggle="tooltip"
                        data-mdb-placement="bottom" title="My cloud disk">
                         <i class="fas fa-cloud"></i>
                     </a>
                     <a class="nav-link px-2 dropdown-toggle d-flex align-items-center hidden-arrow" href=""
                        id="navbarDropdownProfile"
                        role="button" data-mdb-toggle="dropdown">
-                        <img class="rounded-circle" src="{{ user.profile.avatar.url }}" height="25" width="25"
+                        <img class="rounded-circle" src="{{ user.user_page.avatar.url }}" height="25" width="25"
                              alt="avatar">
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <a class="dropdown-item" href="{% url 'cloud:profile' %}">Personal information</a>
+                            <a class="dropdown-item" href="{% url 'cloud:user_page' %}">Personal information</a>
                         </li>
                         <li>
                             <a class="dropdown-item" href="{% url 'cloud:logout' %}">LogOut</a>

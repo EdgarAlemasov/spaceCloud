@@ -1,4 +1,5 @@
 {% load static %}
+{% csrf_token %}
 <!DOCTYPE html>
 <html lang="ru" class="h-100">
 <head>
@@ -8,12 +9,12 @@
     <link href="https://cdn.bootcdn.net/ajax/libs/mdb-ui-kit/3.9.0/mdb.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.staticfile.org/video.js/7.17.2/video-js.min.css" rel="stylesheet">
-    <title>подробности</title>
+    <title>details</title>
 </head>
 <body class="h-100">
 <nav class="navbar navbar-light bg-white shadow-0 border-bottom">
     <div class="container-fluid">
-        <a class="navbar-toggler" href="{% url 'pan:cloud' %}" data-mdb-toggle="tooltip" data-mdb-placement="bottom"
+        <a class="navbar-toggler" href="{% url 'cloud:cloud_disk' %}" data-mdb-toggle="tooltip" data-mdb-placement="bottom"
            title="назад">
             <i class="fas fa-chevron-left"></i>
         </a>
@@ -25,9 +26,9 @@
             <a class="nav-link px-2" data-mdb-toggle="tooltip" data-mdb-placement="bottom" title="Последующие обновления">
                 <i class="fas fa-question-circle"></i>
             </a>
-            <a class="nav-link px-2" href="{% url 'pan:profile' %}" data-mdb-toggle="tooltip"
+            <a class="nav-link px-2" href="{% url 'cloud:user_page' %}" data-mdb-toggle="tooltip"
                data-mdb-placement="bottom" title="账户">
-                <img src="{{ user.profile.avatar.url }}" class="rounded-circle" height="25" width="25" alt="avatar"/>
+                <img src="{{ user.user_page.avatar.url }}" class="rounded-circle" height="25" width="25" alt="avatar"/>
             </a>
         </div>
     </div>
@@ -37,19 +38,19 @@
         <div class="col-md-9 h-100 bg-light">
             <div class="h-100 w-auto d-flex justify-content-center align-items-center d-none" id="notSupport">
                 <div class="text-center">
-                    <p>Предварительный просмотр таких файлов в настоящее время не поддерживается</p>
-                    <button class="btn btn-info">Скачать прямо сейчас</button>
+                    <p>Previewing such files is currently not supported.</p>
+                    <button class="btn btn-info">Download now</button>
                 </div>
             </div>
             <div class="h-100 w-auto d-flex justify-content-center align-items-center d-none" id="notPermission">
                 <div class="text-center">
-                    <p>Предварительный просмотр онлайн не поддерживается из-за размера файла</p>
-                    <button class="btn btn-info">Скачать прямо сейчас</button>
+                    <p>Online preview not happening due to file size</p>
+                    <button class="btn btn-info">Download now</button>
                 </div>
             </div>
             <div class="h-100 w-auto d-flex justify-content-center align-items-center d-none" id="audioPlayer">
                 <div class="card" style="width: 20rem">
-                    <img class="card-img-top" src="{% static 'pan/image/music.jpg' %}" alt="..">
+                    <img class="card-img-top" src="{% static 'cloud/image/music.jpg' %}" alt="..">
                     <div class="card-body">
                         <div class="progress rounded mb-3">
                             <div class="progress-bar bg-info rounded" id="progress"></div>
@@ -78,14 +79,14 @@
         </div>
         <div class="col-md-3 h-100 border-start p-3">
             <div id="info">
-                <h6 class="mb-3 fw-bold">Информация о файле</h6>
+                <h6 class="mb-3 fw-bold">Information about file</h6>
                 <div class="text-muted small">
-                    <p>Имя файла：</p>
-                    <p>Тип файла：</p>
-                    <p>Размер файла：</p>
-                    <p>Время загрузки：</p>
+                    <p>File name：</p>
+                    <p>File type：</p>
+                    <p>File size：</p>
+                    <p>Upload time：</p>
                 </div>
-                <h6 class="mb-3 fw-bold">подсказка</h6>
+                <h6 class="mb-3 fw-bold">help</h6>
                 <div class="small">
                     <i class="fas fa-info me-1"></i>
                     <span id="tip"></span>
@@ -108,8 +109,8 @@
 <script src="https://cdn.staticfile.org/howler/2.2.3/howler.min.js"></script>
 <script src="https://cdn.staticfile.org/video.js/7.17.2/video.min.js"></script>
 <script src="https://cdn.staticfile.org/video.js/7.17.2/lang/zh-CN.min.js"></script>
-<script src="{% static 'pan/js/utils.js' %}"></script>
-<script src="{% static 'pan/js/config.js' %}"></script>
-<script src="{% static 'pan/js/detail.js' %}"></script>
+<script src="{% static 'cloud/js/utils.js' %}"></script>
+<script src="{% static 'cloud/js/config.js' %}"></script>
+<script src="{% static 'cloud/js/detail.js' %}"></script>
 </body>
 </html>
