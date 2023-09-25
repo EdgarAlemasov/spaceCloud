@@ -95,7 +95,7 @@ DATABASES = {
         'NAME': 'spacecloud',
         'HOST': '127.0.0.1',
         'PORT': '5432',
-        'USER': 'postgres',
+        'USER': 'postgres_okas',
         'PASSWORD': 'ImAlive72ae',
     }
 }
