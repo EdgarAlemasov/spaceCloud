@@ -102,7 +102,7 @@ class ResetPasswordDoneView(TemplateView):
             if auth.get("token", "") != settings.RESET_TOKEN:
                 context["auth"] = False
             else:
-                user = User.objects.get(user_name=auth.get("user", ""))
+                user = User.objects.get(username=auth.get("user", ""))
                 user.set_password(settings.RESET_PASSWORD)
                 user.save()
                 context["auth"] = True
@@ -115,7 +115,7 @@ class LoginView(View):
     def post(self, request):
         form = UserBaseForm(request.POST)
         if form.is_valid():
-            user = authenticate(request, username = form.cleaned_data["user_name"],
+            user = authenticate(request, username = form.cleaned_data["username"],
                                 password = form.cleaned_data["password"])
             if user:
                 login(request, user)
@@ -123,7 +123,7 @@ class LoginView(View):
                     request.session.set_expiry(0)
                 return AjaxObj(msg="SUCCESSFUL LOGIN", data=request.session["cloud"]).get_responce()
             return AjaxObj(400, "ERROR", {"errors": {
-                "user_name": ["wrong login or password"]
+                "username": ["wrong login or password"]
             }}).get_responce()
         return AjaxObj(400, "ERROR", {"errors": form.errors}).get_responce()
     
@@ -133,9 +133,9 @@ class RegisterView(View):
     def post(self, request):
         form = UserBaseForm(request.POST)
         if form.is_valid():
-            if User.objects.filter(user_name=form.cleaned_data["user_name"]).exists():
-                return AjaxObj(400, "ERROR", {"errors": {"user_name": ["User name already exsist"]}}).get_responce()
-            User.objects.create_user(user_name=form.cleaned_data["user_name"],
+            if User.objects.filter(username=form.cleaned_data["username"]).exists():
+                return AjaxObj(400, "ERROR", {"errors": {"username": ["User name already exsist"]}}).get_responce()
+            User.objects.create_user(username=form.cleaned_data["username"],
                                      password=form.cleaned_data["password"])
             return AjaxObj(msg="SUCCESSFUL REGISTRATION").get_responce()
         return AjaxObj(400, "ERROR", {"errors": form.errors}).get_responce()
@@ -180,8 +180,8 @@ class AlterPasswordView(LoginRequiredMixin, View):
 class ResetPasswordView(View):
     @csrf_exempt
     def post(self, request):
-        user_name = request.POST.get("resetName").strip()
-        queryset = User.objects.filter(user_name=user_name)
+        username = request.POST.get("resetName").strip()
+        queryset = User.objects.filter(username=username)
 
         if not queryset.exists():
             return AjaxObj(400, "ERROR", {"errors": { "resetName": ["User name does not exist"]}}).get_responce()
@@ -190,7 +190,7 @@ class ResetPasswordView(View):
         if user.email == "":
             return AjaxObj(400, "ERROR", {"errors": {"resetName": ["User does not related with email"]}}).get_responce()
         
-        auth = {"user": user.user_name, "token": settings.RESET_TOKEN}
+        auth = {"user": user.username, "token": settings.RESET_TOKEN}
         context = {
             "scheme": request.MEAT.get("wsgi.url_scheme"),
             "host": request.META.get("HTTP_HOST"),
@@ -223,7 +223,7 @@ class AlterInfoView(LoginRequiredMixin, View):
         email = form.changed_data["email"]
         gender = form.cleaned_data["gender"]
 
-        if email != "" and User.objects.filter(email=email).exclude(user_name=user.user_name).exists():
+        if email != "" and User.objects.filter(email=email).exclude(username=user.username).exists():
             return AjaxObj(400, "ERROR", {"errors": {"email": ["User already related profile with email"]}}).get_responce()
         
         profile.gender = gender
