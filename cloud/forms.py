@@ -3,7 +3,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 
 
 class UserBaseForm(forms.Form):
-    user_name = forms.CharField(max_length=150, validators=(UnicodeUsernameValidator,))
+    username = forms.CharField(max_length=150, validators=(UnicodeUsernameValidator,))
     password = forms.CharField(min_length=6 ,max_length=128)
     remember = forms.BooleanField(required=False)
 
