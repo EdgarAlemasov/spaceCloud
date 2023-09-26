@@ -55,7 +55,7 @@ def logged_in_log(sender, request, user, **kwargs):
 
     ip = request.META.get("REMOTE_ADDR")
     ua = simple_detect(request.headers.get("user-agent"))
-    UserLog.objects.create(user_name=user.user_name, ip_address=ip, os=ua[0],
+    UserLog.objects.create(username=user.username, ip_address=ip, os=ua[0],
                            browser=ua[1], action="0")
     
 
@@ -63,7 +63,7 @@ def logged_in_log(sender, request, user, **kwargs):
 def logged_out_log(sender, request, user, **kwargs):
     ip = request.META.get("REMOTE_ADDR")
     ua = simple_detect(request.headers.get("user_agent"))
-    UserLog.objects.create(user_name=user.user_name, ip_address=ip, os=ua[0],
+    UserLog.objects.create(username=user.username, ip_address=ip, os=ua[0],
                            browser=ua[1], action="1")
     
 
@@ -71,5 +71,5 @@ def logged_out_log(sender, request, user, **kwargs):
 def login_failed_log(sender, credentials, request, **kwargs):
     ip = request.META.get("REMOTE_ADDR")
     ua = simple_detect(request.headers.get("user-agent"))
-    UserLog.objects.create(user_name=credentials.get("user_name", ""), ip_address=ip, os=ua[0],
+    UserLog.objects.create(username=credentials.get("username", ""), ip_address=ip, os=ua[0],
                            browser=ua[1], action="2")

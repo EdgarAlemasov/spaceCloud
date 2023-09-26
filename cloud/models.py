@@ -288,7 +288,7 @@ class UserLog(models.Model):
         ("2", "login error")
     ]
 
-    user_name = models.CharField(max_length=128, verbose_name="user name")
+    username = models.CharField(max_length=128, verbose_name="user name")
     ip_address = models.GenericIPAddressField(verbose_name="IP-address")
     browser = models.CharField(max_length=200, verbose_name="browser")
     os = models.CharField(max_length=30, verbose_name="os")
