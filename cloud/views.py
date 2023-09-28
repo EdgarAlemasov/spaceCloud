@@ -55,7 +55,7 @@ class UserPageView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data()
-        role = self.request.user.profile.role.role_ley
+        role = self.request.user.profile.role.role_key
         if role == "common":
             context["applied"] = UserApproval.object.filter(create_by=self.request.user)
         context.update({
@@ -121,7 +121,7 @@ class LoginView(View):
                 login(request, user)
                 if not form.cleaned_data["remember"]:
                     request.session.set_expiry(0)
-                return AjaxObj(msg="SUCCESSFUL LOGIN", data=request.session["spacecloud"]).get_responce()
+                return AjaxObj(msg="SUCCESSFUL LOGIN", data=request.session.get("spacecloud", dict())).get_responce()
             return AjaxObj(400, "ERROR", {"errors": {
                 "username": ["wrong login or password"]
             }}).get_responce()
