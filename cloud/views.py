@@ -121,7 +121,7 @@ class LoginView(View):
                 login(request, user)
                 if not form.cleaned_data["remember"]:
                     request.session.set_expiry(0)
-                return AjaxObj(msg="SUCCESSFUL LOGIN", data=request.session["cloud"]).get_responce()
+                return AjaxObj(msg="SUCCESSFUL LOGIN", data=request.session["spacecloud"]).get_responce()
             return AjaxObj(400, "ERROR", {"errors": {
                 "username": ["wrong login or password"]
             }}).get_responce()
@@ -287,8 +287,8 @@ class FileUploadView(LoginRequiredMixin, View):
         file = request.FILES.get("file")
         if not file:
             return AjaxObj().get_responce()
-        use = request.session["cloud"]["used"] + file.size
-        if use > request.session["cloud"]["storage"]:
+        use = request.session["spacecloud"]["used"] + file.size
+        if use > request.session["spacecloud"]["storage"]:
             return AjaxObj(400, "Not enough memory").get_responce()
         
         folder = request.user.files.get(file_uuid=request.POST.get("folderUUID", request.session["root"]))
@@ -312,7 +312,7 @@ class FileUploadView(LoginRequiredMixin, View):
             folder = folder.folder
         
         UserDir.objects.bulk_update(dirs, ("file_size", "update_by"))
-        request.session["cloud"]["used"] = use
+        request.session["spacecloud"]["used"] = use
         return AjaxObj(200, "File has been upload").get_responce()
     
 class FolderUploadView(LoginRequiredMixin, View):
@@ -327,8 +327,8 @@ class FolderUploadView(LoginRequiredMixin, View):
         if path_nums * 2 > settings.DATA_UPLOAD_MAX_NUMBER_FIELDS:
             return AjaxObj(400, f"Files count can't more then {settings.DATA_UPLOAD_MAX_NUMBER_FIELDS}").get_responce()
         
-        use = request.session["cloud"]["used"] + sum(s.size for s in files)
-        if use > request.session["cloud"]["storage"]:
+        use = request.session["spacecloud"]["used"] + sum(s.size for s in files)
+        if use > request.session["spacecloud"]["storage"]:
             return AjaxObj(400, "Not enough memory").get_responce()
         
         folder = request.user.files.get(file_uuid=request.POST.get("folderUUID", request.session["root"]))
@@ -377,7 +377,7 @@ class FolderUploadView(LoginRequiredMixin, View):
         FileAgent.objects.bulk_create(objs)
         UserDir.objects.bulk_update(dirs, ("file_size", "update_by"))
 
-        request.session["cloud"]["used"] = use
+        request.session["spacecloud"]["used"] = use
         return AjaxObj(200, "Folder has been added successfully").get_responce()
     
 
@@ -495,7 +495,7 @@ class FileDeleteView(LoginRequiredMixin, View):
     @csrf_exempt
     def post(self, request):
         uuids = json_loads(request.body).get("uuids")
-        use = request.session["cloud"]["used"]
+        use = request.session["spacecloud"]["used"]
         code = msg = folder = None
         discard = 0
         dirs = list()
@@ -527,7 +527,7 @@ class FileDeleteView(LoginRequiredMixin, View):
             UserDir.objects.bulk_update(dirs, ("file_size", "update_by"))
 
         use -= discard
-        request.session["cloud"]["used"] = use
+        request.session["spacecloud"]["used"] = use
 
         return AjaxObj(code, msg).get_responce()
 

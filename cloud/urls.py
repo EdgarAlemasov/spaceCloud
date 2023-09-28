@@ -58,7 +58,7 @@ urlpatterns += [
 ]
 
 
-# resful api
+# restful api
 router = DefaultRouter(trailing_slash=False)
 router.register("cloud", views.CloudViewSet, "api-cloud")
 router.register("history", views.HistoryViewSet, "api-history")

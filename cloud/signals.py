@@ -51,7 +51,7 @@ def logged_in_log(sender, request, user, **kwargs):
         cloud[item.limit.limit_key] = item.values
 
     cloud["used"] = root.file_size
-    request.session["cloud"] = cloud
+    request.session["spacecloud"] = cloud
 
     ip = request.META.get("REMOTE_ADDR")
     ua = simple_detect(request.headers.get("user-agent"))
